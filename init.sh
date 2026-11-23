@@ -267,6 +267,8 @@ fi
 
 cp "$SCRIPT_DIR/CMakeLists.txt" "$NATIVE_DIR/CMakeLists.txt"
 
+cp "$SCRIPT_DIR/build_profile.json" "$NATIVE_DIR/build_profile.json"
+
 cp -R "$SCRIPT_DIR/src" "$NATIVE_DIR/src"
 
 # cmake identifiers
@@ -282,6 +284,10 @@ if [[ -f "$NATIVE_DIR/src/register_types.cpp" ]]; then
         "s/example_library_init/${EXTENSION_SLUG}_library_init/g" \
         "$NATIVE_DIR/src/register_types.cpp"
 fi
+
+# extra hidden files
+cp "$SCRIPT_DIR/.clang-format" "$NATIVE_DIR/.clang-format"
+cp "$SCRIPT_DIR/.gitignore" "$NATIVE_DIR/.gitignore"
 
 # /////////////////////////////////
 # ~ Generate GDExtension descriptor
