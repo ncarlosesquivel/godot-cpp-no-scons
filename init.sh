@@ -9,6 +9,7 @@ PROJECT_DIR=""
 PROJECT_NAME=""
 EXTENSION_NAME=""
 API_VERSION="4.7"
+BUILD_PROFILE=false
 
 usage() {
     cat <<'EOF'
@@ -70,6 +71,10 @@ while (($#)); do
             API_VERSION="${2:?Missing version for --api-version}"
             shift 2
             ;;
+				--build-profile)
+						BUILD_PROFILE=true
+						shift
+						;;
         -h|--help)
             usage
             exit 0
@@ -267,7 +272,20 @@ fi
 
 cp "$SCRIPT_DIR/CMakeLists.txt" "$NATIVE_DIR/CMakeLists.txt"
 
-cp "$SCRIPT_DIR/build_profile.json" "$NATIVE_DIR/build_profile.json"
+if [[ "$BUILD_PROFILE" == true ]]; then
+	cp "$SCRIPT_DIR/build_profile.json" "$NATIVE_DIR/build_profile.json"
+
+	perl -0pi -e '
+      s{(?m)^add_subdirectory\(godot-cpp SYSTEM\)$}{
+set(GODOTCPP_BUILD_PROFILE
+  "\${CMAKE_CURRENT_SOURCE_DIR}/build_profile.json"
+  CACHE PATH "Godot C++ build profile"
+)
+
+$&
+        }
+    ' "$NATIVE_DIR/CMakeLists.txt"
+fi
 
 cp -R "$SCRIPT_DIR/src" "$NATIVE_DIR/src"
 
@@ -356,7 +374,7 @@ chmod +x "$NATIVE_DIR/build.sh"
 # TODO: build.sh or Makefile not both
 
 cat > "$NATIVE_DIR/Makefile" <<EOF
-.PHONY: all configure build rebuild clean help
+.PHONY: all configure build rebuild format clean help
 
 PRESET := macos-${ARCH}-debug
 BUILD_DIR := build
@@ -371,6 +389,9 @@ build: configure
 
 rebuild: clean build
 
+format: find src -type f \( -name '*.cpp' -o -name '*.h' \) \
+	    	-exec clang-format -i {} +
+
 clean:
 	cmake -E rm -rf \$(BUILD_DIR)
 
@@ -380,6 +401,7 @@ help:
 	@echo "  make configure - Configure CMake"
 	@echo "  make build     - Build extension"
 	@echo "  make rebuild   - Clean and rebuild"
+	@echo "  make format    - Format files in /src"
 	@echo "  make clean     - Remove build directory"
 EOF
 
