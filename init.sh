@@ -179,7 +179,6 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="$PROJECT_NAME"
 config/features=PackedStringArray("$API_VERSION", "Forward Plus")
-config/icon="res://icon.svg"
 EOF
 
     mkdir -p "$PROJECT_DIR/scenes"
